@@ -18,7 +18,7 @@ flutter:
   plugin:
     platforms:
       android:
-        package: io.github.yashmanghnani.toast.fluttertoast
+        package: io.github.yashmanghnani.ym_fluttertoast
         pluginClass: FlutterToastPlugin
       ios:
         pluginClass: FluttertoastPlugin
