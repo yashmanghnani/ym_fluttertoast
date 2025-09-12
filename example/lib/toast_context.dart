@@ -1,6 +1,6 @@
 import 'package:fluttertoast_example/main.dart';
 import 'package:flutter/material.dart';
-import 'package:fluttertoast/fluttertoast.dart';
+import 'package:ym_fluttertoast/fluttertoast.dart';
 
 class ToastContext extends StatefulWidget {
   @override

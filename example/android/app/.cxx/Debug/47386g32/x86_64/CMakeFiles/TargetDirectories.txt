@@ -1,0 +1,2 @@
+/Users/abcom/Development/projects/packages/FlutterToast/example/android/app/.cxx/Debug/47386g32/x86_64/CMakeFiles/edit_cache.dir
+/Users/abcom/Development/projects/packages/FlutterToast/example/android/app/.cxx/Debug/47386g32/x86_64/CMakeFiles/rebuild_cache.dir

@@ -1,8 +1,6 @@
-# [fluttertoast](https://pub.dev/packages/fluttertoast)
+# [fluttertoast](https://pub.dev/packages/ym_fluttertoast)
 
 Toast Library for Flutter
-
-![Build Checks](https://github.com/ponnamkarthik/FlutterToast/workflows/Build%20Checks/badge.svg)
 
 Now this toast library supports two kinds of toast messages one which requires `BuildContext` other with No `BuildContext`
 
@@ -12,7 +10,7 @@ Now this toast library supports two kinds of toast messages one which requires `
 >
 > - Android
 > - IOS
-> - Web (Uses [Toastify-JS](https://github.com/apvarun/toastify-js))
+> - Web 
 
 This one has limited features and no control over UI
 
@@ -31,11 +29,11 @@ This one has limited features and no control over UI
 
 ```yaml
 # add this line to your dependencies
-fluttertoast: ^8.2.11
+fluttertoast: ^0.0.1
 ```
 
 ```dart
-import 'package:fluttertoast/fluttertoast.dart';
+import 'package:ym_fluttertoast/fluttertoast.dart';
 ```
 
 ## Toast with No Build Context (Android & iOS)
@@ -74,7 +72,7 @@ Fluttertoast.cancel()
 
 ### Note Android
 
-<img src="https://raw.githubusercontent.com/ponnamkarthik/FlutterToast/master/screenshot/toast_deprecated_setview.png" height="200px" />
+<img src="https://raw.githubusercontent.com/yashmanghnani/ym_FlutterToast/master/screenshot/toast_deprecated_setview.png" height="200px" />
 
 > Custom Toast will not work on android 11 and above, it will only use _msg_ and _toastLength_ remaining all properties are ignored
 
@@ -210,22 +208,15 @@ fToast.removeCustomToast()
 // To clear the queue
 fToast.removeQueuedCustomToasts();
 ```
-
 ## Preview Images (No BuildContext)
 
-<img src="https://raw.githubusercontent.com/ponnamkarthik/FlutterToast/master/screenshot/1.png" width="320px" />
-<img src="https://raw.githubusercontent.com/ponnamkarthik/FlutterToast/master/screenshot/2.png" width="320px" />
-<img src="https://raw.githubusercontent.com/ponnamkarthik/FlutterToast/master/screenshot/3.png" width="320px" />
-<img src="https://raw.githubusercontent.com/ponnamkarthik/FlutterToast/master/screenshot/4.png" width="320px" />
+<img src="https://raw.githubusercontent.com/yashmanghnani/ym_FlutterToast/master/screenshot/1.png" width="320px" />
+<img src="https://raw.githubusercontent.com/yashmanghnani/ym_FlutterToast/master/screenshot/2.png" width="320px" />
+<img src="https://raw.githubusercontent.com/yashmanghnani/ym_FlutterToast/master/screenshot/3.png" width="320px" />
+<img src="https://raw.githubusercontent.com/yashmanghnani/ym_FlutterToast/master/screenshot/4.png" width="320px" />
 
 ## Preview Images (BuildContext)
 
-<img src="https://raw.githubusercontent.com/ponnamkarthik/FlutterToast/master/screenshot/11.jpg" width="320px" />
+<img src="https://raw.githubusercontent.com/yashmanghnani/ym_FlutterToast/master/screenshot/11.jpg" width="320px" />
 
 ## If you need any features suggest
-
-...
-
-## Buy Me a Coffee
-
-<a href="https://www.buymeacoffee.com/karthikponnam" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/default-orange.png" alt="Buy Me A Coffee" height="41" width="174"></a>
