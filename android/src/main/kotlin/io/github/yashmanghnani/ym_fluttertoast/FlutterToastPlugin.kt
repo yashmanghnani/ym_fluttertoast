@@ -1,4 +1,4 @@
-package io.github.ponnamkarthik.toast.fluttertoast
+package io.github.yashmanghnani.ym_fluttertoast
 
 import android.content.Context
 import io.flutter.embedding.engine.plugins.FlutterPlugin

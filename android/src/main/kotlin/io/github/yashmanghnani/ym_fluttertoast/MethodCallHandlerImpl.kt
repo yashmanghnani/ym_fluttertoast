@@ -1,5 +1,4 @@
-package io.github.ponnamkarthik.toast.fluttertoast
-
+package io.github.yashmanghnani.ym_fluttertoast
 import android.app.Activity
 import android.content.Context
 import android.content.res.AssetManager
