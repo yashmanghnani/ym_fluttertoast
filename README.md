@@ -1,4 +1,4 @@
-# [fluttertoast](https://pub.dev/packages/ym_fluttertoast)
+# [YM_fluttertoast](https://pub.dev/packages/ym_fluttertoast)
 
 Toast Library for Flutter
 
@@ -29,7 +29,7 @@ This one has limited features and no control over UI
 
 ```yaml
 # add this line to your dependencies
-fluttertoast: ^0.0.1
+ym_fluttertoast: ^0.0.3
 ```
 
 ```dart
