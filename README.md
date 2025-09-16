@@ -29,7 +29,7 @@ This one has limited features and no control over UI
 
 ```yaml
 # add this line to your dependencies
-ym_fluttertoast: ^0.0.3
+ym_fluttertoast: ^0.0.4
 ```
 
 ```dart
