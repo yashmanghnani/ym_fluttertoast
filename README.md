@@ -1,222 +1,141 @@
-# [YM_fluttertoast](https://pub.dev/packages/ym_fluttertoast)
+# YM FlutterToast
 
-Toast Library for Flutter
+[![pub package](https://img.shields.io/pub/v/ym_fluttertoast.svg)](https://pub.dev/packages/ym_fluttertoast)
+[![pub points](https://img.shields.io/pub/points/ym_fluttertoast)](https://pub.dev/packages/ym_fluttertoast/score)
 
-Now this toast library supports two kinds of toast messages one which requires `BuildContext` other with No `BuildContext`
+Simple platform toasts and fully-customizable Flutter overlay toasts.
 
-## Toast with no context
+Version `1.0.0` targets Flutter `3.47.0+`, Dart `3.13.0+`, Android API 24+, and iOS 15+. The platform toast API supports Android, iOS, and web. The custom `FToast` overlay works anywhere Flutter can render an overlay.
 
-> Supported Platforms
->
-> - Android
-> - IOS
-> - Web 
-
-This one has limited features and no control over UI
-
-## Toast Which requires BuildContext
-
-> Supported Platforms
->
-> - ALL
-
-1. Full Control of the Toast
-2. Toasts will be queued
-3. Remove a toast
-4. Clear the queue
-
-## How to Use
+## Install
 
 ```yaml
-# add this line to your dependencies
-ym_fluttertoast: ^0.0.4
+dependencies:
+  ym_fluttertoast: ^1.0.0
 ```
+
+Then import the package:
 
 ```dart
 import 'package:ym_fluttertoast/fluttertoast.dart';
 ```
 
-## Toast with No Build Context (Android & iOS)
+## Platform toast
+
+Use `Fluttertoast` when you want a one-line, native/browser toast without a `BuildContext`:
 
 ```dart
-Fluttertoast.showToast(
-        msg: "This is Center Short Toast",
-        toastLength: Toast.LENGTH_SHORT,
-        gravity: ToastGravity.CENTER,
-        timeInSecForIosWeb: 1,
-        backgroundColor: Colors.red,
-        textColor: Colors.white,
-        fontSize: 16.0
-    );
+await Fluttertoast.showToast(
+  msg: 'Saved successfully',
+  toastLength: Toast.LENGTH_SHORT,
+  gravity: ToastGravity.BOTTOM,
+  timeInSecForIosWeb: 2,
+  backgroundColor: Colors.green,
+  textColor: Colors.white,
+  fontSize: 16,
+);
 ```
 
-| property           | description                                                                                        | default                                     |
-| ------------------ | -------------------------------------------------------------------------------------------------- | ------------------------------------------- |
-| msg                | String (Not Null)(required)                                                                        | required                                    |
-| toastLength        | Toast.LENGTH_SHORT or Toast.LENGTH_LONG (optional)                                                 | Toast.LENGTH_SHORT                          |
-| gravity            | ToastGravity.TOP (or) ToastGravity.CENTER (or) ToastGravity.BOTTOM (Web Only supports top, bottom) | ToastGravity.BOTTOM                         |
-| timeInSecForIosWeb | int (for ios & web)                                                                                | 1 (sec)                                     |
-| backgroundColor    | Colors.red                                                                                         | null                                        |
-| textcolor          | Colors.white                                                                                       | null                                        |
-| fontSize           | 16.0 (float)                                                                                       | null                                        |
-| fontAsset          | Path to a font file in the Flutter app assets folder, e.g. 'assets/path/to/some-font.ttf' (String) | null                                        |
-| webShowClose       | false (bool)                                                                                       | false                                       |
-| webBgColor         | String (hex Color)                                                                                 | linear-gradient(to right, #00b09b, #96c93d) |
-| webPosition        | String (`left`, `center` or `right`)                                                               | right                                       |
-
-### To cancel all the toasts call
+Hide the current platform toast:
 
 ```dart
-Fluttertoast.cancel()
+await Fluttertoast.cancel();
 ```
 
-### Note Android
+| Parameter | Description | Default |
+| --- | --- | --- |
+| `msg` | Required toast message. | — |
+| `toastLength` | `Toast.LENGTH_SHORT` or `Toast.LENGTH_LONG`; Android only. | Short |
+| `gravity` | `TOP`, `CENTER`, or `BOTTOM` for platform toasts. | Bottom |
+| `timeInSecForIosWeb` | Duration in seconds for iOS and web. | `1` |
+| `backgroundColor` | Android/iOS background color. | Platform default |
+| `textColor` | Android/iOS text color. | Platform default |
+| `fontSize` | Text size in logical pixels where supported. | Platform default |
+| `fontAsset` | Asset path to a font file in the host app. | Platform default |
+| `webShowClose` | Display a close button on web. | `false` |
+| `webBgColor` | CSS color or gradient for web. | Green gradient |
+| `webPosition` | `left`, `center`, or `right` for web. | `right` |
 
-<img src="https://raw.githubusercontent.com/yashmanghnani/ym_FlutterToast/master/screenshot/toast_deprecated_setview.png" height="200px" />
+### Android
 
-> Custom Toast will not work on android 11 and above, it will only use _msg_ and _toastLength_ remaining all properties are ignored
+Android 11 and newer restrict custom system toast views. On those versions the plugin uses the OS-rendered toast, so custom background, text color, font size, and font asset styling may be ignored. Custom styling remains available on older Android versions.
 
-### Custom Toast For Android
+### Web
 
-Create a file named `toast_custom.xml` in your project `app/res/layout` folder and do custom styling
+Toastify.js and its stylesheet are loaded from the package assets once. Message text is inserted as a DOM text node, so user-provided messages are not interpreted as JavaScript or HTML.
 
-```xml
-<?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="wrap_content"
-    android:layout_height="wrap_content"
-    android:layout_gravity="center_horizontal"
-    android:layout_marginStart="50dp"
-    android:background="@drawable/corner"
-    android:layout_marginEnd="50dp">
+## Custom Flutter overlay toast
 
-    <TextView
-        android:id="@+id/text"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:background="#CC000000"
-        android:paddingStart="16dp"
-        android:paddingTop="10dp"
-        android:paddingEnd="16dp"
-        android:paddingBottom="10dp"
-        android:textStyle="bold"
-        android:textColor="#FFFFFF"
-        tools:text="Toast should be short." />
-</FrameLayout>
-```
-
-## Toast with BuildContext (All Platforms)
-
-Update your `MaterialApp` with `builder` like below for the use of Context globally check doc section Use NavigatorKey for Context(to access context globally)
+Use `FToast` when you need arbitrary Flutter widgets, queueing, custom positioning, or a dismiss button. Add its overlay to the app:
 
 ```dart
 MaterialApp(
-    builder: FToastBuilder(),
-    home: MyApp(),
-    navigatorKey: navigatorKey,
-),
+  builder: FToastBuilder(),
+  home: const MyHomePage(),
+);
 ```
 
+Initialize it with a context below the app overlay:
+
 ```dart
-FToast fToast;
+late final FToast fToast;
 
 @override
 void initState() {
-    super.initState();
-    fToast = FToast();
-    // if you want to use context from globally instead of content we need to pass navigatorKey.currentContext!
-    fToast.init(context);
+  super.initState();
+  fToast = FToast().init(context);
 }
-
-_showToast() {
-    Widget toast = Container(
-        padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 12.0),
-        decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(25.0),
-        color: Colors.greenAccent,
-        ),
-        child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-            Icon(Icons.check),
-            SizedBox(
-            width: 12.0,
-            ),
-            Text("This is a Custom Toast"),
-        ],
-        ),
-    );
-
-
-    fToast.showToast(
-        child: toast,
-        gravity: ToastGravity.BOTTOM,
-        toastDuration: Duration(seconds: 2),
-    );
-
-    // Custom Toast Position
-    fToast.showToast(
-        child: toast,
-        toastDuration: Duration(seconds: 2),
-        positionedToastBuilder: (context, child) {
-          return Positioned(
-            child: child,
-            top: 16.0,
-            left: 16.0,
-          );
-        });
-}
-
 ```
 
-Now Call `_showToast()`
-
-For more details check `example` project
-
-| property               | description                 | default                     |
-| ---------------------- | --------------------------- | --------------------------- |
-| child                  | Widget (Not Null)(required) | required                    |
-| toastDuration          | Duration (optional)         |                             |
-| gravity                | ToastGravity.\*             |                             |
-| positionedToastBuilder | PositionedToastBuilder      |                             |
-| fadeDuration           | Duration                    | Duration(milliseconds: 350) |
-| ignorePointer          | boolean                     | false                       |
-| isDismissible          | boolean                     | false                       |
-
-### Use NavigatorKey for Context(to access context globally)
-
-To use NavigatorKey for Context first define the `GlobalKey<NavigatorState>` at top level in your `main.dart` file
+Show a custom widget:
 
 ```dart
-GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+fToast.showToast(
+  child: Container(
+    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+    decoration: BoxDecoration(
+      color: Colors.green,
+      borderRadius: BorderRadius.circular(24),
+    ),
+    child: const Text('This is a custom toast'),
+  ),
+  gravity: ToastGravity.BOTTOM,
+  toastDuration: const Duration(seconds: 2),
+);
 ```
 
-At the time of initializing the `FToast` we need to use context from globally defined `GlobalKey<NavigatorState>`
+Toasts are queued automatically. Remove the visible toast or clear all queued toasts:
 
 ```dart
-FToast fToast = FToast();
-fToast.init(yourNavKey.currentContext!);
-```
-
-### To cancel all the toasts call
-
-```dart
-// To remove present shwoing toast
-fToast.removeCustomToast()
-
-// To clear the queue
+fToast.removeCustomToast();
 fToast.removeQueuedCustomToasts();
 ```
-## Preview Images (No BuildContext)
 
-<img src="https://raw.githubusercontent.com/yashmanghnani/ym_FlutterToast/master/screenshot/1.png" width="320px" />
-<img src="https://raw.githubusercontent.com/yashmanghnani/ym_FlutterToast/master/screenshot/2.png" width="320px" />
-<img src="https://raw.githubusercontent.com/yashmanghnani/ym_FlutterToast/master/screenshot/3.png" width="320px" />
-<img src="https://raw.githubusercontent.com/yashmanghnani/ym_FlutterToast/master/screenshot/4.png" width="320px" />
+Use `isDismissible: true` to remove a toast when it is tapped. For complete positioning control, provide a builder:
 
-## Preview Images (BuildContext)
+```dart
+fToast.showToast(
+  child: const Text('Top-left toast'),
+  positionedToastBuilder: (context, child, gravity) {
+    return Positioned(top: 24, left: 24, child: child);
+  },
+);
+```
 
-<img src="https://raw.githubusercontent.com/yashmanghnani/ym_FlutterToast/master/screenshot/11.jpg" width="320px" />
+The custom overlay options are:
 
-## If you need any features suggest
+| Parameter | Description | Default |
+| --- | --- | --- |
+| `child` | Required Flutter widget. | — |
+| `toastDuration` | Time before fade-out starts. | 2 seconds |
+| `fadeDuration` | Fade animation duration. | 350 ms |
+| `gravity` | Built-in position. | Bottom |
+| `positionedToastBuilder` | Custom `Positioned` builder. | `null` |
+| `ignorePointer` | Let touches pass through the toast. | `false` |
+| `isDismissible` | Remove the visible toast on tap. | `false` |
+
+See the [example](example) app for platform and custom-toast demonstrations.
+
+## Release notes
+
+See [CHANGELOG.md](CHANGELOG.md) for upgrade notes and the [contribution guide](CONTRIBUTING.md) for development workflow.

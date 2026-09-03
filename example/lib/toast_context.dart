@@ -1,202 +1,145 @@
-import 'package:fluttertoast_example/main.dart';
 import 'package:flutter/material.dart';
 import 'package:ym_fluttertoast/fluttertoast.dart';
 
 class ToastContext extends StatefulWidget {
+  const ToastContext({super.key});
+
   @override
-  _ToastContextState createState() => _ToastContextState();
+  State<ToastContext> createState() => _ToastContextState();
 }
 
 class _ToastContextState extends State<ToastContext> {
-  late FToast fToast;
-
-  Widget toast = Container(
-    padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 12.0),
-    decoration: BoxDecoration(
-      borderRadius: BorderRadius.circular(25.0),
+  final FToast fToast = FToast();
+  final Widget toast = Container(
+    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+    decoration: const BoxDecoration(
+      borderRadius: BorderRadius.all(Radius.circular(25)),
       color: Colors.greenAccent,
     ),
-    child: Row(
+    child: const Row(
       mainAxisSize: MainAxisSize.min,
-      children: [
+      children: <Widget>[
         Icon(Icons.check),
-        SizedBox(
-          width: 12.0,
-        ),
-        Text("This is a Custom Toast"),
+        SizedBox(width: 12),
+        Text('This is a custom toast'),
       ],
     ),
   );
 
-  _showToast() {
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    fToast.init(context);
+  }
+
+  void _showToast() {
     fToast.showToast(
       child: toast,
       gravity: ToastGravity.BOTTOM,
-      toastDuration: Duration(seconds: 2),
+      toastDuration: const Duration(seconds: 2),
     );
   }
 
-  _showBuilderToast() {
+  void _showBuilderToast() {
     fToast.showToast(
-        child: toast,
-        gravity: ToastGravity.BOTTOM,
-        toastDuration: Duration(seconds: 2),
-        positionedToastBuilder: (context, child, gravity) {
-          return Positioned(
-            child: child,
-            top: 16.0,
-            left: 16.0,
-          );
-        });
+      child: toast,
+      gravity: ToastGravity.TOP_LEFT,
+      toastDuration: const Duration(seconds: 2),
+      positionedToastBuilder: (context, child, gravity) {
+        return Positioned(top: 16, left: 16, child: child);
+      },
+    );
   }
 
-  _showToastCancel() {
-    Widget toastWithButton = Container(
-      padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 12.0),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(25.0),
+  void _showToastCancel() {
+    final Widget toastWithButton = Container(
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+      decoration: const BoxDecoration(
+        borderRadius: BorderRadius.all(Radius.circular(25)),
         color: Colors.redAccent,
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
-        children: [
-          Expanded(
+        children: <Widget>[
+          const Flexible(
             child: Text(
-              "This is a Custom Toast This is a Custom Toast This is a Custom Toast This is a Custom Toast This is a Custom Toast This is a Custom Toast",
-              softWrap: true,
-              style: TextStyle(
-                color: Colors.white,
-              ),
+              'This is a custom toast with a close button.',
+              style: TextStyle(color: Colors.white),
             ),
           ),
           IconButton(
-            icon: Icon(
-              Icons.close,
-            ),
+            icon: const Icon(Icons.close),
             color: Colors.white,
-            onPressed: () {
-              fToast.removeCustomToast();
-            },
-          )
+            onPressed: fToast.removeCustomToast,
+          ),
         ],
       ),
     );
     fToast.showToast(
       child: toastWithButton,
       gravity: ToastGravity.CENTER,
-      toastDuration: Duration(seconds: 50),
+      toastDuration: const Duration(seconds: 50),
     );
   }
 
-  _queueToasts() {
-    fToast.showToast(
-      child: toast,
-      gravity: ToastGravity.CENTER,
-      toastDuration: Duration(seconds: 2),
-    );
-    fToast.showToast(
-      child: toast,
-      gravity: ToastGravity.BOTTOM,
-      toastDuration: Duration(seconds: 2),
-    );
-    fToast.showToast(
-      child: toast,
-      gravity: ToastGravity.TOP,
-      toastDuration: Duration(seconds: 2),
-    );
-    fToast.showToast(
-      child: toast,
-      gravity: ToastGravity.CENTER,
-      toastDuration: Duration(seconds: 2),
-    );
-    fToast.showToast(
-      child: toast,
-      gravity: ToastGravity.TOP,
-      toastDuration: Duration(seconds: 2),
-    );
-  }
-
-  _removeToast() {
-    fToast.removeCustomToast();
-  }
-
-  _removeAllQueuedToasts() {
-    fToast.removeQueuedCustomToasts();
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    fToast = FToast();
-    fToast.init(navigatorKey.currentContext!);
+  void _queueToasts() {
+    for (final ToastGravity gravity in <ToastGravity>[
+      ToastGravity.CENTER,
+      ToastGravity.BOTTOM,
+      ToastGravity.TOP,
+      ToastGravity.CENTER,
+      ToastGravity.TOP,
+    ]) {
+      fToast.showToast(
+        child: toast,
+        gravity: gravity,
+        toastDuration: const Duration(seconds: 2),
+      );
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text("Custom Toasts"),
+      appBar: AppBar(title: const Text('Custom toasts')),
+      body: ListView(
+        padding: const EdgeInsets.all(16),
+        children: <Widget>[
+          _ExampleButton(label: 'Show custom toast', onPressed: _showToast),
+          _ExampleButton(
+            label: 'Show custom toast via builder',
+            onPressed: _showBuilderToast,
+          ),
+          _ExampleButton(
+            label: 'Custom toast with close button',
+            onPressed: _showToastCancel,
+          ),
+          _ExampleButton(label: 'Queue toasts', onPressed: _queueToasts),
+          _ExampleButton(
+            label: 'Cancel visible toast',
+            onPressed: fToast.removeCustomToast,
+          ),
+          _ExampleButton(
+            label: 'Remove queued toasts',
+            onPressed: fToast.removeQueuedCustomToasts,
+          ),
+        ],
       ),
-      body: Center(
-        child: Column(
-          children: [
-            SizedBox(
-              height: 24.0,
-            ),
-            ElevatedButton(
-              child: Text("Show Custom Toast"),
-              onPressed: () {
-                _showToast();
-              },
-            ),
-            SizedBox(
-              height: 24.0,
-            ),
-            ElevatedButton(
-              child: Text("Show Custom Toast via PositionedToastBuilder"),
-              onPressed: () {
-                _showBuilderToast();
-              },
-            ),
-            SizedBox(
-              height: 24.0,
-            ),
-            ElevatedButton(
-              child: Text("Custom Toast With Close Button"),
-              onPressed: () {
-                _showToastCancel();
-              },
-            ),
-            SizedBox(
-              height: 24.0,
-            ),
-            ElevatedButton(
-              child: Text("Queue Toasts"),
-              onPressed: () {
-                _queueToasts();
-              },
-            ),
-            SizedBox(
-              height: 24.0,
-            ),
-            ElevatedButton(
-              child: Text("Cancel Toast"),
-              onPressed: () {
-                _removeToast();
-              },
-            ),
-            SizedBox(
-              height: 24.0,
-            ),
-            ElevatedButton(
-              child: Text("Remove Queued Toasts"),
-              onPressed: () {
-                _removeAllQueuedToasts();
-              },
-            ),
-          ],
-        ),
-      ),
+    );
+  }
+}
+
+class _ExampleButton extends StatelessWidget {
+  const _ExampleButton({required this.label, required this.onPressed});
+
+  final String label;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(8),
+      child: ElevatedButton(onPressed: onPressed, child: Text(label)),
     );
   }
 }

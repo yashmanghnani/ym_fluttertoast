@@ -1,139 +1,130 @@
 package io.github.yashmanghnani.ym_fluttertoast
-import android.app.Activity
+
 import android.content.Context
-import android.content.res.AssetManager
-import android.graphics.PorterDuff
 import android.graphics.Typeface
 import android.graphics.drawable.Drawable
 import android.os.Build
+import android.os.Handler
+import android.os.Looper
 import android.view.Gravity
 import android.view.LayoutInflater
 import android.widget.TextView
 import android.widget.Toast
-import android.util.Log
 import androidx.core.content.ContextCompat
 import io.flutter.FlutterInjector
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
-import io.flutter.plugin.common.MethodChannel.MethodCallHandler
-import io.github.yashmanghnani.ym_fluttertoast.R
 
-internal class MethodCallHandlerImpl(private var context: Context) : MethodCallHandler {
+internal class MethodCallHandlerImpl(context: Context) : MethodChannel.MethodCallHandler {
+    private val appContext = context.applicationContext
+    private val mainHandler = Handler(Looper.getMainLooper())
+    private var activeToast: Toast? = null
 
-    private var mToast: Toast? = null
-
-    override fun onMethodCall(call: MethodCall, result: MethodChannel.Result,) {
+    override fun onMethodCall(call: MethodCall, result: MethodChannel.Result) {
         when (call.method) {
-            "showToast" -> {
-                val mMessage = call.argument<Any>("msg").toString()
-                val length = call.argument<Any>("length").toString()
-                val gravity = call.argument<Any>("gravity").toString()
-                val bgcolor = call.argument<Number>("bgcolor")
-                val textcolor = call.argument<Number>("textcolor")
-                val fontSize = call.argument<Number>("fontSize")
-                val fontAsset = call.argument<String>("fontAsset")
-
-                val mGravity: Int = when (gravity) {
-                    "top" -> Gravity.TOP
-                    "center" -> Gravity.CENTER
-                    else -> Gravity.BOTTOM
-                }
-
-                val mDuration: Int = if (length == "long") {
-                    Toast.LENGTH_LONG
-                } else {
-                    Toast.LENGTH_SHORT
-                }
-
-                if (bgcolor != null) {
-                    val layout = (context.getSystemService(Context.LAYOUT_INFLATER_SERVICE,) as LayoutInflater).inflate(R.layout.toast_custom, null,)
-                    val text = layout.findViewById<TextView>(R.id.text,)
-                    text.text = mMessage
-
-                    val gradientDrawable: Drawable? = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                        context.getDrawable(R.drawable.corner)!!
-                    } else {
-                       // context.resources.getDrawable(R.drawable.corner)
-                        ContextCompat.getDrawable(context, R.drawable.corner)
-                    }
-                    gradientDrawable!!.setColorFilter(bgcolor.toInt(), PorterDuff.Mode.SRC_IN)
-                    text.background = gradientDrawable
-
-                    if (fontSize != null) {
-                        text.textSize = fontSize.toFloat()
-                    }
-                    if (textcolor != null) {
-                        text.setTextColor(textcolor.toInt())
-                    }
-
-                    mToast = Toast(context,)
-                    mToast?.duration = mDuration
-
-                    if (fontAsset != null) {
-                        val assetManager: AssetManager = context.assets
-                        val key = FlutterInjector.instance().flutterLoader().getLookupKeyForAsset(fontAsset)
-                        text.typeface = Typeface.createFromAsset(assetManager, key);
-                    }
-                    mToast?.view = layout
-                } else {
-                    Log.d("KARTHIK", "showToast: $bgcolor $textcolor $fontSize $fontAsset")
-                    mToast = Toast.makeText(context, mMessage, mDuration)
-                    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
-                        val textView: TextView = mToast?.view!!.findViewById(android.R.id.message)
-                        if (fontSize != null) {
-                            textView.textSize = fontSize.toFloat()
-                        }
-                        if (textcolor != null) {
-                            textView.setTextColor(textcolor.toInt())
-                        }
-                        if (fontAsset != null) {
-                            val assetManager: AssetManager = context.assets
-                            val key = FlutterInjector.instance().flutterLoader().getLookupKeyForAsset(fontAsset)
-                            textView.typeface = Typeface.createFromAsset(assetManager, key);
-                        }
-                    }
-                }
-
-                try {
-                    when (mGravity) {
-                        Gravity.CENTER -> {
-                            mToast?.setGravity(mGravity, 0, 0,)
-                        }
-                        Gravity.TOP -> {
-                            mToast?.setGravity(mGravity, 0, 100,)
-                        }
-                        else -> {
-                            mToast?.setGravity(mGravity, 0, 100,)
-                        }
-                    }
-                } catch (e: Exception,) { }
-
-                if (context is Activity) {
-                    (context as Activity).runOnUiThread { mToast?.show() }
-                } else {
-                    mToast?.show()
-                }
-
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                    mToast?.addCallback(
-                        object : Toast.Callback() {
-                            override fun onToastHidden() {
-                                super.onToastHidden()
-                                mToast = null
-                            }
-                        },
-                    )
-                }
-                result.success(true,)
-            }
-            "cancel" -> {
-                if (mToast != null) {
-                    mToast?.cancel()
-                    mToast = null
-                }
-                result.success(true,)
-            }
+            "showToast" -> showToast(call, result)
+            "cancel" -> cancel(result)
             else -> result.notImplemented()
+        }
+    }
+
+    private fun showToast(call: MethodCall, result: MethodChannel.Result) {
+        val message = call.argument<String>("msg")
+        if (message == null) {
+            result.error("invalid_arguments", "The toast message must be a String.", null)
+            return
+        }
+
+        val length = call.argument<String>("length")
+        val gravity = call.argument<String>("gravity")
+        val backgroundColor = call.argument<Number>("bgcolor")
+        val textColor = call.argument<Number>("textcolor")
+        val fontSize = call.argument<Number>("fontSize")
+        val fontAsset = call.argument<String>("fontAsset")
+        val duration = if (length == "long") Toast.LENGTH_LONG else Toast.LENGTH_SHORT
+
+        mainHandler.post {
+            activeToast?.cancel()
+            activeToast = createToast(
+                message = message,
+                duration = duration,
+                gravity = gravity,
+                backgroundColor = backgroundColor,
+                textColor = textColor,
+                fontSize = fontSize,
+                fontAsset = fontAsset,
+            )
+            activeToast?.show()
+            result.success(true)
+        }
+    }
+
+    private fun createToast(
+        message: String,
+        duration: Int,
+        gravity: String?,
+        backgroundColor: Number?,
+        textColor: Number?,
+        fontSize: Number?,
+        fontAsset: String?,
+    ): Toast {
+        val toast: Toast
+        val textView: TextView?
+
+        // Android 11+ ignores custom Toast views when the app is in the
+        // background. Use the platform-rendered toast for consistent behavior.
+        if (backgroundColor != null && Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
+            val layout = (appContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE)
+                as LayoutInflater).inflate(R.layout.toast_custom, null)
+            textView = layout.findViewById(R.id.text)
+            textView.text = message
+            val background: Drawable? = ContextCompat.getDrawable(appContext, R.drawable.corner)
+            background?.mutate()?.setTint(backgroundColor.toInt())
+            textView.background = background
+            toast = Toast(appContext)
+            toast.view = layout
+        } else {
+            toast = Toast.makeText(appContext, message, duration)
+            textView = if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
+                toast.view?.findViewById(android.R.id.message)
+            } else {
+                null
+            }
+        }
+
+        toast.duration = duration
+        textView?.apply {
+            fontSize?.toFloat()?.takeIf { it > 0 }?.let { textSize = it }
+            textColor?.toInt()?.let { setTextColor(it) }
+            fontAsset?.let { typeface = loadTypeface(it) }
+        }
+
+        val toastGravity = when (gravity) {
+            "top" -> Gravity.TOP
+            "center" -> Gravity.CENTER
+            else -> Gravity.BOTTOM
+        }
+        val yOffset = if (toastGravity == Gravity.CENTER) 0 else 100
+        toast.setGravity(toastGravity, 0, yOffset)
+        return toast
+    }
+
+    private fun loadTypeface(fontAsset: String): Typeface {
+        val assetManager = appContext.assets
+        val key = FlutterInjector.instance().flutterLoader().getLookupKeyForAsset(fontAsset)
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            Typeface.Builder(assetManager, key).build()
+        } else {
+            @Suppress("DEPRECATION")
+            Typeface.createFromAsset(assetManager, key)
+        }
+    }
+
+    private fun cancel(result: MethodChannel.Result) {
+        mainHandler.post {
+            activeToast?.cancel()
+            activeToast = null
+            result.success(true)
         }
     }
 }

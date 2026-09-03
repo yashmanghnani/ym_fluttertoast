@@ -1,18 +1,28 @@
 name: ym_fluttertoast
 description: Toast Library for Flutter, Easily create toast messages in single line of code
-version: 0.0.4
+version: 1.0.0
 homepage: https://github.com/yashmanghnani/ym_fluttertoast
+repository: https://github.com/yashmanghnani/ym_fluttertoast
 issue_tracker: https://github.com/yashmanghnani/ym_fluttertoast/issues
+topics:
+  - toast
+  - notifications
+  - flutter-plugin
 
 environment:
-  sdk: ">=3.4.0 <4.0.0"      
-  flutter: ">=3.29.3"
+  sdk: ">=3.13.0 <4.0.0"
+  flutter: ">=3.47.0"
 dependencies:
   flutter:
     sdk: flutter
   flutter_web_plugins:
     sdk: flutter
-  web: ">=1.0.0 <2.0.0"
+  web: ^1.1.1
+
+dev_dependencies:
+  flutter_lints: ^6.0.0
+  flutter_test:
+    sdk: flutter
 
 flutter:
   plugin:

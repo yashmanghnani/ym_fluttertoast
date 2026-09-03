@@ -1,127 +1,133 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:ym_fluttertoast/fluttertoast.dart';
 
-class ToastNoContext extends StatefulWidget {
-  @override
-  _ToastNoContextState createState() => _ToastNoContextState();
-}
+class ToastNoContext extends StatelessWidget {
+  const ToastNoContext({super.key});
 
-class _ToastNoContextState extends State<ToastNoContext> {
-  void showLongToast() {
-    Fluttertoast.showToast(
-      msg: "This is Long Toast",
-      toastLength: Toast.LENGTH_LONG,
-      fontSize: 18.0,
+  void _showLongToast() {
+    unawaited(
+      Fluttertoast.showToast(
+        msg: 'This is a long toast',
+        toastLength: Toast.LENGTH_LONG,
+        fontSize: 18,
+      ),
     );
   }
 
-  void showWebColoredToast() {
-    Fluttertoast.showToast(
-      msg: "This is Colored Toast with android duration of 5 Sec",
-      toastLength: Toast.LENGTH_SHORT,
-      webBgColor: "#e74c3c",
-      textColor: Colors.black,
-      timeInSecForIosWeb: 5,
+  void _showWebColoredToast() {
+    unawaited(
+      Fluttertoast.showToast(
+        msg: 'This is a colored toast with a five-second duration',
+        toastLength: Toast.LENGTH_SHORT,
+        webBgColor: '#e74c3c',
+        textColor: Colors.black,
+        timeInSecForIosWeb: 5,
+      ),
     );
   }
 
-  void showColoredToast() {
-    Fluttertoast.showToast(
-        msg: "This is Colored Toast with android of short",
+  void _showColoredToast() {
+    unawaited(
+      Fluttertoast.showToast(
+        msg: 'This is a colored short toast',
         toastLength: Toast.LENGTH_SHORT,
         backgroundColor: Colors.red,
-        textColor: Colors.white);
+        textColor: Colors.white,
+      ),
+    );
   }
 
-  void showShortToast() {
-    Fluttertoast.showToast(
-        msg: "This is Short Toast",
+  void _showShortToast() {
+    unawaited(
+      Fluttertoast.showToast(
+        msg: 'This is a short toast',
         toastLength: Toast.LENGTH_SHORT,
-        timeInSecForIosWeb: 1);
+        timeInSecForIosWeb: 1,
+      ),
+    );
   }
 
-  void showTopShortToast() {
-    Fluttertoast.showToast(
-        msg: "This is Top Short Toast",
+  void _showTopShortToast() {
+    unawaited(
+      Fluttertoast.showToast(
+        msg: 'This is a top short toast',
         toastLength: Toast.LENGTH_SHORT,
         gravity: ToastGravity.TOP,
-        timeInSecForIosWeb: 1);
+        timeInSecForIosWeb: 1,
+      ),
+    );
   }
 
-  void showCenterShortToast() {
-    Fluttertoast.showToast(
-        msg: "This is Center Short Toast",
+  void _showCenterShortToast() {
+    unawaited(
+      Fluttertoast.showToast(
+        msg: 'This is a center short toast',
         toastLength: Toast.LENGTH_SHORT,
         gravity: ToastGravity.CENTER,
-        timeInSecForIosWeb: 1);
+        timeInSecForIosWeb: 1,
+      ),
+    );
   }
 
-  void cancelToast() {
-    Fluttertoast.cancel();
-  }
-
-  @override
-  void initState() {
-    super.initState();
+  void _cancelToast() {
+    unawaited(Fluttertoast.cancel());
   }
 
   @override
   Widget build(BuildContext context) {
-    return new MaterialApp(
-      home: new Scaffold(
-        appBar: new AppBar(
-          title: new Text('Flutter Toast'),
-        ),
-        body: new Center(
-          child: new Column(
+    return Scaffold(
+      appBar: AppBar(title: const Text('Platform toasts')),
+      body: Center(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(16),
+          child: Column(
             children: <Widget>[
-              new Padding(
-                padding: const EdgeInsets.all(10.0),
-                child: new ElevatedButton(
-                    child: new Text('Show Long Toast'),
-                    onPressed: showLongToast),
+              _ExampleButton(
+                label: 'Show long toast',
+                onPressed: _showLongToast,
               ),
-              new Padding(
-                padding: const EdgeInsets.all(10.0),
-                child: new ElevatedButton(
-                    child: new Text('Show Short Toast'),
-                    onPressed: showShortToast),
+              _ExampleButton(
+                label: 'Show short toast',
+                onPressed: _showShortToast,
               ),
-              new Padding(
-                padding: const EdgeInsets.all(10.0),
-                child: new ElevatedButton(
-                    child: new Text('Show Center Short Toast'),
-                    onPressed: showCenterShortToast),
+              _ExampleButton(
+                label: 'Show center short toast',
+                onPressed: _showCenterShortToast,
               ),
-              new Padding(
-                padding: const EdgeInsets.all(10.0),
-                child: new ElevatedButton(
-                    child: new Text('Show Top Short Toast'),
-                    onPressed: showTopShortToast),
+              _ExampleButton(
+                label: 'Show top short toast',
+                onPressed: _showTopShortToast,
               ),
-              new Padding(
-                padding: const EdgeInsets.all(10.0),
-                child: new ElevatedButton(
-                    child: new Text('Show Colored Toast'),
-                    onPressed: showColoredToast),
+              _ExampleButton(
+                label: 'Show colored toast',
+                onPressed: _showColoredToast,
               ),
-              new Padding(
-                padding: const EdgeInsets.all(10.0),
-                child: new ElevatedButton(
-                    child: new Text('Show  Web Colored Toast'),
-                    onPressed: showWebColoredToast),
+              _ExampleButton(
+                label: 'Show web colored toast',
+                onPressed: _showWebColoredToast,
               ),
-              new Padding(
-                padding: const EdgeInsets.all(10.0),
-                child: new ElevatedButton(
-                  child: new Text('Cancel Toasts'),
-                  onPressed: cancelToast,
-                ),
-              ),
+              _ExampleButton(label: 'Cancel toasts', onPressed: _cancelToast),
             ],
           ),
         ),
       ),
+    );
+  }
+}
+
+class _ExampleButton extends StatelessWidget {
+  const _ExampleButton({required this.label, required this.onPressed});
+
+  final String label;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(8),
+      child: ElevatedButton(onPressed: onPressed, child: Text(label)),
     );
   }
 }

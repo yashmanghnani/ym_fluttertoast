@@ -3,50 +3,49 @@ import 'package:fluttertoast_example/toast_no_context.dart';
 import 'package:ym_fluttertoast/fluttertoast.dart';
 import 'package:flutter/material.dart';
 
-GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
-void main() => runApp(
-      MaterialApp(
-        builder: FToastBuilder(),
-        home: MyApp(),
-        navigatorKey: navigatorKey,
-      ),
-    );
-
-class MyApp extends StatefulWidget {
-  @override
-  _MyAppState createState() => _MyAppState();
+void main() {
+  runApp(
+    MaterialApp(
+      builder: FToastBuilder(),
+      home: const MyApp(),
+      navigatorKey: navigatorKey,
+    ),
+  );
 }
 
-class _MyAppState extends State<MyApp> {
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text("Toast"),
-      ),
+      appBar: AppBar(title: const Text('Toast')),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             ElevatedButton(
               onPressed: () {
-                Navigator.of(context).push(MaterialPageRoute(
-                  builder: (context) => ToastNoContext(),
-                ));
+                Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (context) => const ToastNoContext(),
+                  ),
+                );
               },
-              child: Text("Flutter Toast No Context"),
+              child: const Text('Flutter Toast No Context'),
             ),
-            SizedBox(
-              height: 24.0,
-            ),
+            const SizedBox(height: 24),
             ElevatedButton(
               onPressed: () {
-                Navigator.of(context).push(MaterialPageRoute(
-                  builder: (context) => ToastContext(),
-                ));
+                Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (context) => const ToastContext(),
+                  ),
+                );
               },
-              child: Text("Flutter Toast Context"),
+              child: const Text('Flutter Toast Context'),
             ),
           ],
         ),

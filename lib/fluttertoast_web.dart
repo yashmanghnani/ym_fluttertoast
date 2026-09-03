@@ -1,142 +1,177 @@
 import 'dart:async';
 import 'dart:js_interop';
-import 'package:web/web.dart' as web;
-import 'dart:ui_web' as ui;
+import 'dart:js_interop_unsafe';
+
 import 'package:flutter/services.dart';
 import 'package:flutter_web_plugins/flutter_web_plugins.dart';
+import 'package:web/web.dart' as web;
 
-/// Plugin Class to show a toast message on screen for web
+import 'dart:ui_web' as ui;
+
+const String _channelName = 'PonnamKarthik/fluttertoast';
+const String _defaultBackground = 'linear-gradient(to right, #00b09b, #96c93d)';
+
+/// Web implementation backed by the bundled Toastify.js library.
 class FluttertoastWebPlugin {
-  /// Constructor class
-  /// which calls the metohd to inject JS and CSS in to dom
   FluttertoastWebPlugin() {
-    injectCssAndJSLibraries();
+    _assetsReady = _injectCssAndJSLibraries();
   }
 
-  /// Registers [MethodChannel] used to communicate with the platform side.
+  late final Future<void> _assetsReady;
+  final List<JSObject> _activeToasts = <JSObject>[];
+
+  /// Register the method channel used by [Fluttertoast].
   static void registerWith(Registrar registrar) {
     final MethodChannel channel = MethodChannel(
-        'PonnamKarthik/fluttertoast', const StandardMethodCodec(), registrar);
+      _channelName,
+      const StandardMethodCodec(),
+      registrar,
+    );
     final FluttertoastWebPlugin instance = FluttertoastWebPlugin();
     channel.setMethodCallHandler(instance.handleMethodCall);
   }
 
-  /// Handle Method Callbacks from [MethodChannel].
-  Future<dynamic> handleMethodCall(MethodCall call) async {
+  /// Handle method calls from the Dart API.
+  Future<Object?> handleMethodCall(MethodCall call) async {
     switch (call.method) {
       case 'showToast':
-        showToast(call.arguments);
+        await _assetsReady;
+        _showToast(call.arguments);
+        return true;
+      case 'cancel':
+        _cancelToasts();
         return true;
       default:
         throw PlatformException(
-            code: 'Unimplemented',
-            details: "The fluttertoast plugin for web doesn't implement "
-                "the method '${call.method}'");
+          code: 'Unimplemented',
+          details: "The web implementation does not support '${call.method}'.",
+        );
     }
   }
 
-  /// showToast which parses the required arguments and pass
-  /// it to [addHtmlToast]
-  showToast(args) {
-    String msg = args['msg'];
-    String? gravity = "top";
-    if (args['gravity'] == "top" || args['gravity'] == "bottom") {
-      gravity = args["gravity"];
+  /// Exposes the idempotent asset-loading future for integrations that need it.
+  Future<void> injectCssAndJSLibraries() => _assetsReady;
+
+  Future<void> _injectCssAndJSLibraries() async {
+    final web.Element? head = web.document.querySelector('head');
+    if (head == null) {
+      throw StateError('The browser document has no <head> element.');
     }
 
-    String position = args['webPosition'] ?? 'right';
+    if (web.document.querySelector('#fluttertoast-css') == null) {
+      final String cssUrl = ui.assetManager.getAssetUrl(
+        'packages/fluttertoast/assets/toastify.css',
+      );
+      final web.HTMLLinkElement css = web.HTMLLinkElement()
+        ..id = 'fluttertoast-css'
+        ..rel = 'stylesheet'
+        ..href = cssUrl;
+      head.append(css);
+    }
 
-    String bgColor =
-        args['webBgColor'] ?? "linear-gradient(to right, #00b09b, #96c93d)";
-
-    int? textColor = args['textcolor'];
-
-    int time = args['time'] == null
-        ? 3000
-        : (int.parse(args['time'].toString()) * 1000);
-
-    bool showClose = args['webShowClose'] ?? false;
-
-    addHtmlToast(
-        msg: msg,
-        gravity: gravity,
-        position: position,
-        bgcolor: bgColor,
-        showClose: showClose,
-        time: time,
-        textColor: textColor);
+    if (globalContext.getProperty('Toastify'.toJS) == null) {
+      final String jsUrl = ui.assetManager.getAssetUrl(
+        'packages/fluttertoast/assets/toastify.js',
+      );
+      final web.HTMLScriptElement script = web.HTMLScriptElement()
+        ..id = 'fluttertoast-js'
+        ..async = true
+        ..src = jsUrl;
+      final Future<void> loaded = script.onLoad.first.then<void>((_) {});
+      head.append(script);
+      await loaded;
+    }
   }
 
-  /// [injectCssAndJSLibraries] which add the JS and CSS files into DOM
-  Future<void> injectCssAndJSLibraries() async {
-    final List<Future<void>> loading = <Future<void>>[];
-    final List<web.HTMLElement> tags = <web.HTMLElement>[];
+  void _showToast(Object? rawArguments) {
+    final Map<Object?, Object?> arguments = rawArguments is Map
+        ? Map<Object?, Object?>.from(rawArguments)
+        : <Object?, Object?>{};
+    final Object? rawMessage = arguments['msg'];
+    if (rawMessage is! String) {
+      throw PlatformException(
+        code: 'invalid_arguments',
+        message: 'The toast message must be a String.',
+      );
+    }
 
-    final cssUrl = ui.assetManager.getAssetUrl(
-      'packages/fluttertoast/assets/toastify.css',
+    final String gravity = arguments['gravity'] == 'top' ? 'top' : 'bottom';
+    final String position = _validPosition(arguments['webPosition']);
+    final String background = arguments['webBgColor'] is String
+        ? arguments['webBgColor'] as String
+        : _defaultBackground;
+    final int seconds = _asInt(arguments['time'], fallback: 1);
+    final int duration = seconds <= 0 ? 0 : seconds * 1000;
+    final bool showClose = arguments['webShowClose'] == true;
+
+    final web.HTMLDivElement content = web.HTMLDivElement()
+      ..textContent = rawMessage;
+    final Object? rawTextColor = arguments['textcolor'];
+    if (rawTextColor is num) {
+      content.style.setProperty('color', _argbToCss(rawTextColor.toInt()));
+    }
+
+    final JSAny? toastifyValue = globalContext.getProperty('Toastify'.toJS);
+    if (toastifyValue == null || !toastifyValue.isA<JSFunction>()) {
+      throw StateError('Toastify.js failed to load.');
+    }
+
+    late JSObject toast;
+    final JSFunction onRemoved = () {
+      _activeToasts.remove(toast);
+    }.toJS;
+    final JSAny options = <String, Object?>{
+      'node': content,
+      'gravity': gravity,
+      'position': position,
+      'duration': duration,
+      'close': showClose,
+      'backgroundColor': background,
+      'callback': onRemoved,
+    }.jsify()!;
+    final JSAny? rawToast = (toastifyValue as JSFunction).callAsFunction(
+      null,
+      options,
     );
-    final web.HTMLLinkElement css = web.HTMLLinkElement()
-      ..id = 'toast-css'
-      ..setAttribute("rel", "stylesheet")
-      ..href = cssUrl;
-    tags.add(css);
-
-    final jsUrl = ui.assetManager.getAssetUrl(
-      'packages/fluttertoast/assets/toastify.js',
-    );
-    final web.HTMLScriptElement script = web.HTMLScriptElement()
-      ..async = true
-      // ..defer = true
-      ..src = jsUrl;
-    loading.add(script.onLoad.first);
-    tags.add(script);
-    for (final web.HTMLElement tag in tags) {
-      web.document.querySelector('head')!.append(tag);
+    if (rawToast == null || !rawToast.isA<JSObject>()) {
+      throw StateError('Toastify.js could not create a toast.');
     }
-
-    await Future.wait(loading);
+    toast = rawToast as JSObject;
+    toast.callMethod<JSAny?>('showToast'.toJS);
+    _activeToasts.add(toast);
   }
 
-  /// injects Final [Toastify] code with all the parameters to
-  /// make toast visible on web
-  addHtmlToast(
-      {String msg = "",
-      String? gravity = "top",
-      String position = "right",
-      String bgcolor = "linear-gradient(to right, #00b09b, #96c93d)",
-      int time = 3000,
-      bool showClose = false,
-      int? textColor}) {
-    String m = msg.replaceAll("'", "\\'").replaceAll("\n", "<br />");
-    web.Element? ele = web.document.querySelector("#toast-content");
-    String content = """
-          var toastElement = Toastify({
-            text: '$m',
-            gravity: '$gravity',
-            position: '$position',
-            duration: $time,
-            close: $showClose,
-            backgroundColor: "$bgcolor",
-          });
-          toastElement.showToast();
-        """;
-    if (web.document.querySelector("#toast-content") != null) {
-      ele!.remove();
+  void _cancelToasts() {
+    for (final JSObject toast in List<JSObject>.of(_activeToasts)) {
+      toast.callMethod<JSAny?>('hideToast'.toJS);
     }
-    final web.HTMLScriptElement scriptText = web.HTMLScriptElement()
-      ..id = "toast-content";
-    if (scriptText.innerHTML is String) {
-      scriptText.innerHTML = content.toJS.toString() as dynamic;
-    } else {
-      scriptText.innerHTML = content.toJS as dynamic;
+    _activeToasts.clear();
+  }
+
+  static int _asInt(Object? value, {required int fallback}) {
+    if (value is int) {
+      return value;
     }
-    web.document.body!.append(scriptText);
-    if (textColor != null) {
-      web.Element toast = web.document.querySelector('.toastify')!;
-      String tcRadix = textColor.toRadixString(16);
-      final String tC = "${tcRadix.substring(2)}${tcRadix.substring(0, 2)}";
-      final style = toast.getAttribute('style') ?? '';
-      toast.setAttribute('style', '$style color: #$tC;');
+    if (value is num) {
+      return value.toInt();
     }
+    return int.tryParse('$value') ?? fallback;
+  }
+
+  static String _validPosition(Object? value) {
+    return switch (value) {
+      'left' => 'left',
+      'center' => 'center',
+      _ => 'right',
+    };
+  }
+
+  static String _argbToCss(int value) {
+    final int alpha = (value >> 24) & 0xff;
+    final int red = (value >> 16) & 0xff;
+    final int green = (value >> 8) & 0xff;
+    final int blue = value & 0xff;
+    final double opacity = alpha / 255;
+    return 'rgba($red, $green, $blue, $opacity)';
   }
 }
