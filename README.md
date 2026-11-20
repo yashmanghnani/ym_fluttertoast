@@ -5,13 +5,13 @@
 
 Simple platform toasts and fully-customizable Flutter overlay toasts.
 
-Version `1.0.0` targets Flutter `3.47.0+`, Dart `3.13.0+`, Android API 24+, and iOS 15+. The platform toast API supports Android, iOS, and web. The custom `FToast` overlay works anywhere Flutter can render an overlay.
+Version `1.0.1` targets Flutter `3.47.0+`, Dart `3.13.0+`, Android API 24+, and iOS 15+. The platform toast API supports Android, iOS, and web. The custom `FToast` overlay works anywhere Flutter can render an overlay.
 
 ## Install
 
 ```yaml
 dependencies:
-  ym_fluttertoast: ^1.0.0
+  ym_fluttertoast: ^1.0.1
 ```
 
 Then import the package:

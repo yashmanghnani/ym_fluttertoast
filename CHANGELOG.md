@@ -1,3 +1,8 @@
+## 1.0.1
+
+- Fixed web Toastify assets loading under the published package name.
+- Updated the `web` dependency to 1.1.2.
+
 ## 1.0.0
 
 - Raised the minimum supported Flutter version to 3.47.0 and Dart version to 3.13.0.

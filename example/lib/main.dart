@@ -1,6 +1,7 @@
 import 'package:fluttertoast_example/toast_context.dart';
 import 'package:fluttertoast_example/toast_no_context.dart';
 import 'package:ym_fluttertoast/fluttertoast.dart';
+// ignore: deprecated_member_use
 import 'package:flutter/material.dart';
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();

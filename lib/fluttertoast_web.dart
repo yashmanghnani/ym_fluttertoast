@@ -60,7 +60,7 @@ class FluttertoastWebPlugin {
 
     if (web.document.querySelector('#fluttertoast-css') == null) {
       final String cssUrl = ui.assetManager.getAssetUrl(
-        'packages/fluttertoast/assets/toastify.css',
+        'packages/ym_fluttertoast/assets/toastify.css',
       );
       final web.HTMLLinkElement css = web.HTMLLinkElement()
         ..id = 'fluttertoast-css'
@@ -71,7 +71,7 @@ class FluttertoastWebPlugin {
 
     if (globalContext.getProperty('Toastify'.toJS) == null) {
       final String jsUrl = ui.assetManager.getAssetUrl(
-        'packages/fluttertoast/assets/toastify.js',
+        'packages/ym_fluttertoast/assets/toastify.js',
       );
       final web.HTMLScriptElement script = web.HTMLScriptElement()
         ..id = 'fluttertoast-js'

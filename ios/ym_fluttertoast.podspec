@@ -3,7 +3,7 @@
 #
 Pod::Spec.new do |s|
   s.name             = 'ym_fluttertoast'
-  s.version          = '1.0.0'
+  s.version          = '1.0.1'
   s.summary          = 'Toast Library for Flutter'
   s.description      = <<-DESC
 Toast Library for FLutter

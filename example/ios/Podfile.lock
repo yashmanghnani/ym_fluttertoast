@@ -1,6 +1,6 @@
 PODS:
   - Flutter (1.0.0)
-  - ym_fluttertoast (1.0.0):
+  - ym_fluttertoast (1.0.1):
     - Flutter
 
 DEPENDENCIES:
@@ -15,7 +15,7 @@ EXTERNAL SOURCES:
 
 SPEC CHECKSUMS:
   Flutter: 71a624a5bc0c04062bf19101d501e466baf2fb47
-  ym_fluttertoast: a0ffdc8610d734218aff1da5a2cde4ada3b44185
+  ym_fluttertoast: 6e9ac531dcc8bb1d73cb721c0ce96b0750251e8c
 
 PODFILE CHECKSUM: 9c46fd01abff66081b39f5fa5767b3f1d0b11d76
 
